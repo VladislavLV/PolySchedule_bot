@@ -9,7 +9,7 @@ def convertDate(date):
         int(splittedDateString[0])
     )
 
-def generate_keyboards(days = ['20.12.2020', '22.12.2020', '25.12.2020', '1.1.2021'], nameArg = "hometask", additional = "_0"):
+def generate_keyboards(days = ['20.12.2020', '22.12.2020', '25.12.2020', '1.1.2021'], nameArg = "tasklist", additional = "_0"):
     previousDay = 0
     weeks = []
     keyboardWeek = []

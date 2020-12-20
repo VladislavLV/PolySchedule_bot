@@ -32,6 +32,12 @@ def set_group(message):
     bot.send_message(message.chat.id,
                      st.update_tg_login(arguments[0], arguments[1], arguments[2], message.chat.username))
 
+@bot.message_handler(commands=['changegroup'])
+def set_group(message):
+    arguments = message.text.split(" ")[1:]
+    #print(arguments)
+    bot.send_message(message.chat.id, st.change_group_num(arguments[0], arguments[1], arguments[2], arguments[3]))
+
 
 @bot.message_handler(commands=['getgroup'])
 def get_group(message):
@@ -40,7 +46,11 @@ def get_group(message):
 
 @bot.message_handler(commands=['schedule'])
 def get_schedule(message):
-    bot.send_message(message.chat.id, sch.read_schedule("20.10.2020"))
+    group = st.get_group_num(message.chat.username)["pgroup"]
+    print(group)
+    test = sch.read_schedule(group, "10:00-11:40 20.10.2020")
+    print(test)
+    bot.send_message(message.chat.id, sch.read_schedule(group, "10:00-11:40 20.10.2020"))
 
 
 
@@ -79,13 +89,30 @@ def set_group(message):
 
 @bot.message_handler(commands=['tasklist'])
 def get_homework(message):
-    print(st.get_group_num(message.chat.username))
-    bot.send_message(message.chat.id, 'Задание')
+    #print(st.get_group_num(message.chat.username))
+    bot.send_message(message.chat.id, 'Задание на неделю:', reply_markup=utils.generate_keyboards()[0])
+    #bot.send_message(message.chat.id, 'Задание')
 
+@bot.callback_query_handler(func=lambda call: True)
+def callback_worker(call):
+    result = call.data.split("_")
+    if result[0] == "tasklist":
+        print(result)
+        if result[1] == "👉🏿":
+            step = int(result[2]) + 1
+        elif result[1] == "👈🏿":
+            step = int(result[2]) - 1
+            print(call.data)
+        elif result[3] != result[1]:
+            step = int(result[2])
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=result[1],
+                                  reply_markup=utils.generate_keyboards(additional=f'_{result[1]}')[step])
+            return
+        else:
+            return
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=str(step),
+                              reply_markup=utils.generate_keyboards()[step])
 
-@bot.message_handler(commands=['changegroup'])
-def set_group(message):
-    bot.send_message(message.chat.id, 'Введите новый номер группы ')
 
 
 # @bot.message_handler(commands=['test'])
@@ -99,7 +126,6 @@ def get_hometask(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_worker(call):
-
     result = call.data.split("_")
     if result[0] == "hometask":
         print(result)
@@ -117,6 +143,8 @@ def callback_worker(call):
             return
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=str(step),
                               reply_markup=utils.generate_keyboards()[step])
+
+
 
 # @bot.message_handler(content_types=['text'])
 # def next_week(message):
